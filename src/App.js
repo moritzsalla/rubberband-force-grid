@@ -30,9 +30,11 @@ const OuterBounds = styled.section`
 
 const GridContainer = styled(motion.div)`
   touch-action: none;
-  height: 140%;
-  width: 140%;
+  height: 200%;
+  width: 200%;
   border: thin solid black;
+  display: grid;
+  place-items: center;
 `;
 
 const Image = styled(motion.img)`
@@ -59,7 +61,7 @@ export default function App() {
 
   // world space translation
 
-  const springConfig = { damping: 10, stiffness: 40, mass: 1 };
+  const springConfig = { damping: 50, stiffness: 50, mass: 4 };
   const cursor = useMotionValue("grab");
   const x = useSpring(0, springConfig);
   const y = useSpring(0, springConfig);
@@ -70,6 +72,7 @@ export default function App() {
     cursor.set(down ? "grabbing" : "grab");
 
     // --- rubber band ---
+
     x.stop();
     y.stop();
 
@@ -90,24 +93,20 @@ export default function App() {
   };
 
   const constrictToBoundingBox = () => {
-    let newCrop = { x: x.get(), y: y.get() };
     const gridRect = gridRef.current?.getBoundingClientRect();
     const containerRect = boundsRef.current?.getBoundingClientRect();
 
     if (gridRect.left > containerRect.left) {
-      newCrop.x = 0;
+      x.set(0);
     } else if (gridRect.right < containerRect.right) {
-      newCrop.x = -(gridRect.width - containerRect.width);
+      x.set(-(gridRect.width - containerRect.width));
     }
 
     if (gridRect.top > containerRect.top) {
-      newCrop.y = 0;
+      y.set(0);
     } else if (gridRect.bottom < containerRect.bottom) {
-      newCrop.y = -(gridRect.height - containerRect.height);
+      y.set(-(gridRect.height - containerRect.height));
     }
-
-    x.set(newCrop.x);
-    y.set(newCrop.y);
   };
 
   const bind = useGesture(
