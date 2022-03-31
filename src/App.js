@@ -4,9 +4,9 @@ import styled from "styled-components";
 import "./styles.css";
 import { useGesture } from "@use-gesture/react";
 import { forceSimulation } from "d3-force";
-import { rectCollide } from "./force";
+import { rectCollide } from "./rectCollideForce";
 import * as d3 from "d3";
-import dampen from "./dampen";
+import { dampen } from "./math";
 
 const randImageDimension = d3.randomUniform(100, 200);
 
