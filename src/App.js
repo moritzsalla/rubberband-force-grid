@@ -8,6 +8,8 @@ import { rectCollide } from './rectCollideForce';
 import { dampen } from './math';
 import { data, safeArea } from './data';
 
+const CANVAS_SIZE = '200%';
+
 const OuterBounds = styled.section`
   overflow: hidden;
   height: 100vh;
@@ -16,8 +18,9 @@ const OuterBounds = styled.section`
 
 const GridContainer = styled(motion.div)`
   touch-action: none;
-  height: 200%;
-  width: 200%;
+  position: relative;
+  height: ${CANVAS_SIZE};
+  width: ${CANVAS_SIZE};
   border: thin solid black;
   display: grid;
   place-items: center;
@@ -26,10 +29,8 @@ const GridContainer = styled(motion.div)`
 const Image = styled(motion.img)`
   user-select: none;
   position: absolute;
-  outline: thin black solid;
   width: ${({ $width }) => $width && `${$width}px`};
   height: ${({ $height }) => $height && `${$height}px`};
-  object-fit: contain;
 `;
 
 const nodeTransition = {
@@ -37,6 +38,8 @@ const nodeTransition = {
   duration: 0.65,
 };
 
+/// todo: canvas as big as inner bounds
+// todo start drag at center
 export default function App() {
   const [nodes, setNodes] = useState(null);
 
@@ -48,9 +51,17 @@ export default function App() {
 
   const springConfig = { damping: 80, stiffness: 300 };
   const cursor = useMotionValue('grab');
-  const x = useSpring(0, springConfig);
-  const y = useSpring(0, springConfig);
+  const x = useSpring(origin.x, springConfig);
+  const y = useSpring(origin.y, springConfig);
   const scale = useSpring(1, springConfig);
+
+  // set origin to center of bounds
+
+  useEffect(() => {
+    const { width, height } = boundsRef.current?.getBoundingClientRect();
+    x.set(-width / 2);
+    y.set(-height / 2);
+  }, []);
 
   const handleDrag = ({ offset: [ox, oy], down }) => {
     scale.set(down ? 0.9 : 1);
@@ -105,7 +116,7 @@ export default function App() {
     }
   );
 
-  // --- poisson disk sampling ---
+  // --- generative grid ---
 
   const computeLayout = useCallback(() => {
     if (!gridRef.current) return;
@@ -115,7 +126,7 @@ export default function App() {
       .force(
         'collide',
         rectCollide()
-          .iterations(400)
+          .iterations(800)
           .strength(1)
           .size(function ({ width, height }) {
             return [width + safeArea, height + safeArea];
@@ -129,12 +140,10 @@ export default function App() {
     return () => programRef.current.stop();
   }, [computeLayout]);
 
-  console.log(data);
-
   return (
     <OuterBounds ref={boundsRef}>
       <GridContainer {...bind()} ref={gridRef} style={{ x, y, cursor }}>
-        {nodes?.map(({ x: pdsX, y: pdsY, url, width = 0, height = 0 }, i) => {
+        {nodes?.map(({ x: pdsX, y: pdsY, url, width, height }, i) => {
           return (
             <Image
               key={`image-${i}`}
