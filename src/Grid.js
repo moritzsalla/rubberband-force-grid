@@ -32,6 +32,11 @@ const OuterBounds = styled.section`
   user-select: none;
 `;
 
+const ScaleContainer = styled(motion.div)`
+  height: 100%;
+  width: 100%;
+`;
+
 const LoadingOverlay = styled.div`
   display: grid;
   place-items: center;
@@ -165,27 +170,25 @@ export default function App() {
   return (
     <MotionConfig transition={TRANSITION}>
       <OuterBounds ref={boundsRef}>
-        <GridContainer
-          {...bind()}
-          ref={gridRef}
-          style={{ x, y, cursor, scale: zoomOutOnScroll }}
-        >
-          {nodes?.map(({ x: pdsX, y: pdsY, url, width, height }, i) => {
-            const id = `image-${i}`;
-            return (
-              <GridTile
-                key={id}
-                layoutId={id}
-                style={{ x: pdsX, y: pdsY }}
-                url={url}
-                size={[width, height]}
-                nodeCoords={[pdsX, pdsY]}
-                worldCoords={[x, y]}
-                canvasBounds={boundsRef.current?.getBoundingClientRect()}
-              />
-            );
-          })}
-        </GridContainer>
+        <ScaleContainer style={{ scale: zoomOutOnScroll }}>
+          <GridContainer {...bind()} ref={gridRef} style={{ x, y, cursor }}>
+            {nodes?.map(({ x: pdsX, y: pdsY, url, width, height }, i) => {
+              const id = `image-${i}`;
+              return (
+                <GridTile
+                  key={id}
+                  layoutId={id}
+                  style={{ x: pdsX, y: pdsY }}
+                  url={url}
+                  size={[width, height]}
+                  nodeCoords={[pdsX, pdsY]}
+                  worldCoords={[x, y]}
+                  canvasBounds={boundsRef.current?.getBoundingClientRect()}
+                />
+              );
+            })}
+          </GridContainer>
+        </ScaleContainer>
 
         {!nodes && <LoadingOverlay>loading...</LoadingOverlay>}
       </OuterBounds>
