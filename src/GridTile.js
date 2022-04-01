@@ -1,13 +1,22 @@
-import { motion } from 'framer-motion';
+import {
+  motion,
+  useSpring,
+  useTransform,
+  useViewportScroll,
+} from 'framer-motion';
 import styled from 'styled-components';
+
+const ImageWrapper = styled(motion.div)`
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  width: ${({ $width }) => $width && `${$width}px`};
+  height: ${({ $height }) => $height && `${$height}px`};
+`;
 
 const Image = styled(motion.img)`
   user-select: none;
-  position: absolute;
   outline: thin solid black;
-
-  width: ${({ $width }) => $width && `${$width}px`};
-  height: ${({ $height }) => $height && `${$height}px`};
 `;
 
 const nodeTransition = {
@@ -16,11 +25,15 @@ const nodeTransition = {
 };
 
 const GridTile = ({ url, width, height, x, y }) => {
+  const { scrollY } = useViewportScroll();
+  const parallax = useTransform(
+    scrollY,
+    [0, window.innerHeight],
+    [0, -window.innerHeight * 2]
+  );
+
   return (
-    <Image
-      alt={`image`}
-      src={url}
-      draggable='false'
+    <ImageWrapper
       animate={{
         x: x || 0,
         y: y || 0,
@@ -28,7 +41,14 @@ const GridTile = ({ url, width, height, x, y }) => {
       transition={nodeTransition}
       $width={width}
       $height={height}
-    />
+    >
+      <Image
+        alt={`image`}
+        src={url}
+        draggable='false'
+        style={{ y: parallax }}
+      />
+    </ImageWrapper>
   );
 };
 
