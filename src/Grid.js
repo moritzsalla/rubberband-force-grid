@@ -2,7 +2,7 @@ import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { useGesture } from '@use-gesture/react';
-import { forceSimulation } from 'd3-force';
+import { forceSimulation, forceCenter, forceX, forceY } from 'd3-force';
 import { rectCollide } from './rectCollideForce';
 import { dampen } from './math';
 import { data } from './data';
@@ -18,13 +18,22 @@ const OuterBounds = styled.section`
   width: 100%;
 `;
 
+const LoadingOverlay = styled.div`
+  display: grid;
+  place-items: center;
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+`;
+
 const GridContainer = styled(motion.div)`
-  touch-action: none;
-  position: relative;
   height: ${CANVAS_SIZE};
   width: ${CANVAS_SIZE};
 
-  border: thin solid black;
+  touch-action: none;
+  position: relative;
   display: grid;
   place-items: center;
 `;
@@ -110,6 +119,8 @@ export default function App() {
   const computeLayout = useCallback(() => {
     if (!gridRef.current) return;
 
+    const rect = boundsRef.current?.getBoundingClientRect();
+
     programRef.current = forceSimulation(data)
       .alphaDecay(0.1)
       .force(
@@ -139,6 +150,7 @@ export default function App() {
             <GridTile
               key={id}
               layoutId={id}
+              style={{ x: pdsX, y: pdsY }}
               x={pdsX}
               y={pdsY}
               url={url}
@@ -148,6 +160,8 @@ export default function App() {
           );
         })}
       </GridContainer>
+
+      {!nodes && <LoadingOverlay>loading...</LoadingOverlay>}
     </OuterBounds>
   );
 }

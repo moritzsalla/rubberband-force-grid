@@ -3,16 +3,15 @@ import styled from 'styled-components';
 import * as d3 from 'd3';
 
 const ImageWrapper = styled(motion.div)`
-  height: 100%;
-  width: 100%;
   position: absolute;
   width: ${({ $width }) => $width && `${$width}px`};
   height: ${({ $height }) => $height && `${$height}px`};
+  outline: thin solid black;
+  background: white;
 `;
 
 const Image = styled(motion.img)`
   user-select: none;
-  outline: thin solid black;
 `;
 
 const nodeTransition = {
@@ -30,8 +29,6 @@ const GridTile = ({ url, width, height, x, y }) => {
     [0, -1000 - y * 0.5 + random()]
   );
 
-  console.log(x);
-
   return (
     <ImageWrapper
       animate={{
@@ -44,6 +41,7 @@ const GridTile = ({ url, width, height, x, y }) => {
     >
       <Image
         alt={`image`}
+        loading='lazy'
         src={url}
         draggable='false'
         style={{ y: parallax }}
