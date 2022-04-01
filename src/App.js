@@ -6,9 +6,11 @@ import { useGesture } from '@use-gesture/react';
 import { forceSimulation } from 'd3-force';
 import { rectCollide } from './rectCollideForce';
 import { dampen } from './math';
-import { data, safeArea } from './data';
+import { data } from './data';
 
 const CANVAS_SIZE = '200%';
+const NODE_SAFE_AREA = 50;
+const SPACING_TRIES = 500;
 
 const OuterBounds = styled.section`
   overflow: hidden;
@@ -21,6 +23,7 @@ const GridContainer = styled(motion.div)`
   position: relative;
   height: ${CANVAS_SIZE};
   width: ${CANVAS_SIZE};
+
   border: thin solid black;
   display: grid;
   place-items: center;
@@ -29,6 +32,8 @@ const GridContainer = styled(motion.div)`
 const Image = styled(motion.img)`
   user-select: none;
   position: absolute;
+  outline: thin solid black;
+
   width: ${({ $width }) => $width && `${$width}px`};
   height: ${({ $height }) => $height && `${$height}px`};
 `;
@@ -51,8 +56,8 @@ export default function App() {
 
   const springConfig = { damping: 80, stiffness: 300 };
   const cursor = useMotionValue('grab');
-  const x = useSpring(origin.x, springConfig);
-  const y = useSpring(origin.y, springConfig);
+  const x = useSpring(0, springConfig);
+  const y = useSpring(0, springConfig);
   const scale = useSpring(1, springConfig);
 
   // set origin to center of bounds
@@ -126,11 +131,12 @@ export default function App() {
       .force(
         'collide',
         rectCollide()
-          .iterations(800)
+          .iterations(SPACING_TRIES)
           .strength(1)
-          .size(function ({ width, height }) {
-            return [width + safeArea, height + safeArea];
-          })
+          .size(({ width, height }) => [
+            width + NODE_SAFE_AREA,
+            height + NODE_SAFE_AREA,
+          ])
       )
       .on('end', () => setNodes(data));
   }, []);
