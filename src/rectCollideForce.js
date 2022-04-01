@@ -1,4 +1,4 @@
-import * as d3 from 'd3';
+import { quadtree } from 'd3-quadtree';
 
 export function rectCollide() {
   var nodes, sizes, masses;
@@ -15,7 +15,7 @@ export function rectCollide() {
 
     function iterate() {
       var j = -1;
-      var tree = d3.quadtree(nodes, xCenter, yCenter).visitAfter(prepare);
+      var tree = quadtree(nodes, xCenter, yCenter).visitAfter(prepare);
 
       while (++j < nodes.length) {
         node = nodes[j];

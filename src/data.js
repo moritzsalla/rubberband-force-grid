@@ -1,6 +1,6 @@
-import * as d3 from 'd3';
+import { randomInt } from 'd3-random';
 
-const random = (min, max) => d3.randomInt(min, max)();
+const random = (min, max) => randomInt(min, max)();
 
 export const data = [...new Array(30).fill({})].map(() => {
   const width = random(200, 300);

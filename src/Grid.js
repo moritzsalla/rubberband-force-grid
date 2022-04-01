@@ -2,7 +2,7 @@ import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { useGesture } from '@use-gesture/react';
-import { forceSimulation, forceCenter, forceX, forceY } from 'd3-force';
+import { forceSimulation } from 'd3-force';
 import { rectCollide } from './rectCollideForce';
 import { dampen } from './math';
 import { data } from './data';
@@ -16,6 +16,7 @@ const OuterBounds = styled.section`
   overflow: hidden;
   height: 100vh;
   width: 100%;
+  background: white;
 `;
 
 const LoadingOverlay = styled.div`
