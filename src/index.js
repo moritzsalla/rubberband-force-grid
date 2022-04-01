@@ -1,12 +1,13 @@
 import { StrictMode } from 'react';
 import ReactDOM from 'react-dom';
 
-import App from './App';
+import './styles.css';
+import Grid from './Grid';
 
 const rootElement = document.getElementById('root');
 ReactDOM.render(
   <StrictMode>
-    <App />
+    <Grid />
   </StrictMode>,
   rootElement
 );

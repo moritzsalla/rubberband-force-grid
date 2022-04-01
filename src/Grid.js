@@ -1,12 +1,12 @@
 import { motion, useMotionValue, useSpring } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import './styles.css';
 import { useGesture } from '@use-gesture/react';
 import { forceSimulation } from 'd3-force';
 import { rectCollide } from './rectCollideForce';
 import { dampen } from './math';
 import { data } from './data';
+import GridTile from './GridTile';
 
 const CANVAS_SIZE = '200%';
 const NODE_SAFE_AREA = 50;
@@ -15,7 +15,7 @@ const SPACING_TRIES = 500;
 const OuterBounds = styled.section`
   overflow: hidden;
   height: 100vh;
-  width: 100vw;
+  width: 100%;
 `;
 
 const GridContainer = styled(motion.div)`
@@ -29,22 +29,6 @@ const GridContainer = styled(motion.div)`
   place-items: center;
 `;
 
-const Image = styled(motion.img)`
-  user-select: none;
-  position: absolute;
-  outline: thin solid black;
-
-  width: ${({ $width }) => $width && `${$width}px`};
-  height: ${({ $height }) => $height && `${$height}px`};
-`;
-
-const nodeTransition = {
-  ease: [0.87, 0, 0.13, 1],
-  duration: 0.65,
-};
-
-/// todo: canvas as big as inner bounds
-// todo start drag at center
 export default function App() {
   const [nodes, setNodes] = useState(null);
 
@@ -150,17 +134,16 @@ export default function App() {
     <OuterBounds ref={boundsRef}>
       <GridContainer {...bind()} ref={gridRef} style={{ x, y, cursor }}>
         {nodes?.map(({ x: pdsX, y: pdsY, url, width, height }, i) => {
+          const id = `image-${i}`;
           return (
-            <Image
-              key={`image-${i}`}
-              alt={`image`}
-              layoutId={`image-${i}`}
-              src={url}
-              draggable='false'
-              animate={{ x: pdsX || 0, y: pdsY || 0 }}
-              transition={nodeTransition}
-              $width={width}
-              $height={height}
+            <GridTile
+              key={id}
+              layoutId={id}
+              x={pdsX}
+              y={pdsY}
+              url={url}
+              width={width}
+              height={height}
             />
           );
         })}
