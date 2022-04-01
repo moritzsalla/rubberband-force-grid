@@ -1,4 +1,4 @@
-export const dampen = (val, [min, max], factor = 2) => {
+export const dampen = (val, [min, max], factor = 3) => {
   if (val > max) {
     let extra = val - max;
     let dampenedExtra = extra > 0 ? Math.sqrt(extra) : -Math.sqrt(-extra);

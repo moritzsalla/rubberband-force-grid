@@ -1,4 +1,4 @@
-import * as d3 from "d3";
+import * as d3 from 'd3';
 
 export function rectCollide() {
   var nodes, sizes, masses;
@@ -93,7 +93,7 @@ export function rectCollide() {
 
   force.size = function (_) {
     return arguments.length
-      ? ((size = typeof _ === "function" ? _ : constant(_)), force)
+      ? ((size = typeof _ === 'function' ? _ : constant(_)), force)
       : size;
   };
 
