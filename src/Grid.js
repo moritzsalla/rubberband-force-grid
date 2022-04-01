@@ -1,4 +1,11 @@
-import { motion, MotionConfig, useMotionValue, useSpring } from 'framer-motion';
+import {
+  motion,
+  MotionConfig,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useViewportScroll,
+} from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { useGesture } from '@use-gesture/react';
@@ -126,8 +133,6 @@ export default function App() {
   const computeLayout = useCallback(() => {
     if (!gridRef.current) return;
 
-    const rect = boundsRef.current?.getBoundingClientRect();
-
     programRef.current = forceSimulation(data)
       .alphaDecay(0.1)
       .force(
@@ -148,10 +153,23 @@ export default function App() {
     return () => programRef.current.stop();
   }, [computeLayout]);
 
+  // --- wheel ---
+
+  const { scrollY } = useViewportScroll();
+  const zoomOutOnScroll = useTransform(
+    scrollY,
+    [0, window.innerHeight],
+    [1, 0.6]
+  );
+
   return (
     <MotionConfig transition={TRANSITION}>
       <OuterBounds ref={boundsRef}>
-        <GridContainer {...bind()} ref={gridRef} style={{ x, y, cursor }}>
+        <GridContainer
+          {...bind()}
+          ref={gridRef}
+          style={{ x, y, cursor, scale: zoomOutOnScroll }}
+        >
           {nodes?.map(({ x: pdsX, y: pdsY, url, width, height }, i) => {
             const id = `image-${i}`;
             return (

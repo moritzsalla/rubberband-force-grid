@@ -8,26 +8,36 @@ const ImageWrapper = styled(motion.div)`
   height: ${({ $height }) => $height && `${$height}px`};
 `;
 
-const Outline = styled(motion.div)`
+const Parallax = styled(motion.div)`
   background: white;
   outline: thin solid black;
   height: 100%;
   width: 100%;
 `;
 
+const verticalDisplacement = -500;
+const parallaxOffset = randomUniform(-100, 100);
+const scaleOffset = randomUniform(0.8, 1)();
+
 const GridTile = ({ url, x, y, width, height }) => {
   const { scrollY } = useViewportScroll();
+
   const parallax = useTransform(
     scrollY,
     [0, window.innerHeight],
-    [0, -500 + randomUniform(-200, 200)()]
+    [0, verticalDisplacement + parallaxOffset()]
+  );
+  const scale = useTransform(
+    scrollY,
+    [0, window.innerHeight],
+    [1, scaleOffset]
   );
 
   return (
     <ImageWrapper animate={{ x, y }} $width={width} $height={height}>
-      <Outline style={{ y: parallax }}>
+      <Parallax style={{ y: parallax, scale }}>
         <img alt={`image`} loading='lazy' src={url} draggable='false' />
-      </Outline>
+      </Parallax>
     </ImageWrapper>
   );
 };
