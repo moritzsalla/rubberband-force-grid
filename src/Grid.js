@@ -153,7 +153,7 @@ export default function App() {
     return () => programRef.current.stop();
   }, [computeLayout]);
 
-  // --- wheel ---
+  // --- parallax: zoom out on wheel ---
 
   const { scrollY } = useViewportScroll();
   const zoomOutOnScroll = useTransform(
@@ -177,11 +177,11 @@ export default function App() {
                 key={id}
                 layoutId={id}
                 style={{ x: pdsX, y: pdsY }}
-                x={pdsX}
-                y={pdsY}
                 url={url}
-                width={width}
-                height={height}
+                size={[width, height]}
+                nodeCoords={[pdsX, pdsY]}
+                worldCoords={[x, y]}
+                canvasBounds={boundsRef.current?.getBoundingClientRect()}
               />
             );
           })}
