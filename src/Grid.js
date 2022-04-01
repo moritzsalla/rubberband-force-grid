@@ -1,4 +1,4 @@
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { motion, MotionConfig, useMotionValue, useSpring } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { useGesture } from '@use-gesture/react';
@@ -12,11 +12,17 @@ const CANVAS_SIZE = '200%';
 const NODE_SAFE_AREA = 50;
 const SPACING_TRIES = 500;
 
+const TRANSITION = {
+  ease: [0.87, 0, 0.13, 1],
+  duration: 0.65,
+};
+
 const OuterBounds = styled.section`
   overflow: hidden;
   height: 100vh;
   width: 100%;
   background: white;
+  user-select: none;
 `;
 
 const LoadingOverlay = styled.div`
@@ -143,26 +149,28 @@ export default function App() {
   }, [computeLayout]);
 
   return (
-    <OuterBounds ref={boundsRef}>
-      <GridContainer {...bind()} ref={gridRef} style={{ x, y, cursor }}>
-        {nodes?.map(({ x: pdsX, y: pdsY, url, width, height }, i) => {
-          const id = `image-${i}`;
-          return (
-            <GridTile
-              key={id}
-              layoutId={id}
-              style={{ x: pdsX, y: pdsY }}
-              x={pdsX}
-              y={pdsY}
-              url={url}
-              width={width}
-              height={height}
-            />
-          );
-        })}
-      </GridContainer>
+    <MotionConfig transition={TRANSITION}>
+      <OuterBounds ref={boundsRef}>
+        <GridContainer {...bind()} ref={gridRef} style={{ x, y, cursor }}>
+          {nodes?.map(({ x: pdsX, y: pdsY, url, width, height }, i) => {
+            const id = `image-${i}`;
+            return (
+              <GridTile
+                key={id}
+                layoutId={id}
+                style={{ x: pdsX, y: pdsY }}
+                x={pdsX}
+                y={pdsY}
+                url={url}
+                width={width}
+                height={height}
+              />
+            );
+          })}
+        </GridContainer>
 
-      {!nodes && <LoadingOverlay>loading...</LoadingOverlay>}
-    </OuterBounds>
+        {!nodes && <LoadingOverlay>loading...</LoadingOverlay>}
+      </OuterBounds>
+    </MotionConfig>
   );
 }
