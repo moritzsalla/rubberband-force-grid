@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { SPRING_TRANSITION, TRANSITION } from './animationConfig';
 import { data } from './data';
+import { debounce } from './debounce';
 import GridTile from './GridTile';
 import { dampen } from './math';
 import { rectCollide } from './rectCollideForce';
@@ -70,14 +71,18 @@ export default function App() {
   // set origin to center of bounds
 
   useEffect(() => {
-    const ro = new ResizeObserver((entries) => {
-      if (!entries?.[0]) return;
-
-      const { width, height } = entries[0].contentRect;
+    const redrawBounds = debounce(({ width, height }) => {
       x.set(-width / 2);
       y.set(-height / 2);
     });
+
+    const ro = new ResizeObserver((entries) => {
+      const worldSpaceRect = entries[0]?.contentRect;
+      redrawBounds(worldSpaceRect);
+    });
     ro.observe(boundsRef.current);
+
+    return () => ro.disconnect();
   }, [x, y]);
 
   const handleDrag = ({ offset: [ox, oy], down }) => {
