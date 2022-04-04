@@ -10,12 +10,13 @@ import {
 } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { SPRING_TRANSITION, TRANSITION } from './animationConfig';
-import { data } from './data';
-import { debounce } from './debounce';
+import { SPRING_TRANSITION, TRANSITION } from './utils/animationConfig';
+import { data } from './data/data';
+import { debounce } from './utils/debounce';
 import GridTile from './GridTile';
-import { dampen } from './math';
-import { rectCollide } from './rectCollideForce';
+import { dampen } from './utils/math';
+import { rectCollide } from './utils/rectCollideForce';
+import GridLoadingOverlay from './GridLoadingOverlay';
 
 const CANVAS_SIZE = '200%';
 const NODE_SAFE_AREA = 50;
@@ -30,16 +31,6 @@ const OuterBounds = styled.section`
 `;
 
 const ScaleContainer = styled(motion.div)`
-  height: 100%;
-  width: 100%;
-`;
-
-const LoadingOverlay = styled.div`
-  display: grid;
-  place-items: center;
-  position: absolute;
-  top: 0;
-  left: 0;
   height: 100%;
   width: 100%;
 `;
@@ -67,23 +58,6 @@ export default function App() {
   const x = useSpring(0, SPRING_TRANSITION);
   const y = useSpring(0, SPRING_TRANSITION);
   const scale = useSpring(1, SPRING_TRANSITION);
-
-  // set origin to center of bounds
-
-  useEffect(() => {
-    const redrawBounds = debounce(({ width, height }) => {
-      x.set(-width / 2);
-      y.set(-height / 2);
-    });
-
-    const ro = new ResizeObserver((entries) => {
-      const worldSpaceRect = entries[0]?.contentRect;
-      redrawBounds(worldSpaceRect);
-    });
-    ro.observe(boundsRef.current);
-
-    return () => ro.disconnect();
-  }, [x, y]);
 
   const handleDrag = ({ offset: [ox, oy], down }) => {
     scale.set(down ? 0.9 : 1);
@@ -155,7 +129,9 @@ export default function App() {
             height + NODE_SAFE_AREA,
           ])
       )
-      .on('end', () => setNodes(data));
+      .on('end', () => {
+        setNodes(data);
+      });
   }, []);
 
   useEffect(() => {
@@ -163,7 +139,25 @@ export default function App() {
     return () => programRef.current.stop();
   }, [computeLayout]);
 
-  // --- parallax: zoom out on wheel ---
+  // set origin to center of bounds
+
+  useEffect(() => {
+    const setWorldOrigin = debounce(({ width, height }) => {
+      console.log('setWorldOrigin', width, height);
+      x.set(-width / 2);
+      y.set(-height / 2);
+    });
+
+    const ro = new ResizeObserver((entries) => {
+      const worldSpaceRect = entries[0]?.contentRect;
+      setWorldOrigin(worldSpaceRect);
+    });
+    ro.observe(boundsRef.current);
+
+    return () => ro.disconnect();
+  }, [x, y]);
+
+  // parallax: zoom out on wheel
 
   const { scrollY } = useViewportScroll();
   const zoomOutOnScroll = useTransform(
@@ -179,11 +173,11 @@ export default function App() {
           <GridContainer {...bind()} ref={gridRef} style={{ x, y, cursor }}>
             {nodes?.map(({ x: pdsX, y: pdsY, url, width, height }, i) => {
               const id = `image-${i}`;
+
               return (
                 <GridTile
                   key={id}
                   layoutId={id}
-                  style={{ x: pdsX, y: pdsY }}
                   url={url}
                   size={[width, height]}
                   nodeCoords={[pdsX, pdsY]}
@@ -192,10 +186,22 @@ export default function App() {
                 />
               );
             })}
+
+            <motion.div
+              style={{
+                x: 0,
+                y: 0,
+                height: 10,
+                width: 10,
+                position: 'relative',
+                zIndex: 100,
+                background: 'red',
+              }}
+            />
           </GridContainer>
         </ScaleContainer>
 
-        {!nodes && <LoadingOverlay>loading...</LoadingOverlay>}
+        <GridLoadingOverlay unmountDeps={[nodes]} />
       </OuterBounds>
     </MotionConfig>
   );

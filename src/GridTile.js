@@ -6,7 +6,7 @@ import {
 } from 'framer-motion';
 import styled from 'styled-components';
 import { randomUniform } from 'd3-random';
-import { SPRING_TRANSITION } from './animationConfig';
+import { SPRING_TRANSITION } from './utils/animationConfig';
 
 const ImageWrapper = styled(motion.div)`
   position: absolute;
@@ -70,6 +70,7 @@ const GridTile = ({
 
   return (
     <ImageWrapper
+      initial={{ x: nodeX, y: nodeY }}
       animate={{ x: nodeX, y: nodeY }}
       $width={width}
       $height={height}
