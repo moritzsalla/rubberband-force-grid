@@ -1,7 +1,12 @@
-import { motion, useTransform, useViewportScroll } from 'framer-motion';
+import {
+  motion,
+  useSpring,
+  useTransform,
+  useViewportScroll,
+} from 'framer-motion';
 import styled from 'styled-components';
 import { randomUniform } from 'd3-random';
-import { useEffect } from 'react';
+import { SPRING_TRANSITION } from './animationConfig';
 
 const ImageWrapper = styled(motion.div)`
   position: absolute;
@@ -21,9 +26,9 @@ const DragParallax = styled(motion.div)`
   width: 100%;
 `;
 
-const verticalDisplacement = -500;
-const getParallaxOffset = randomUniform(-100, 100);
-const scaleOffset = randomUniform(0.8, 1)();
+const randomScroll = randomUniform(-100, 100);
+const randomScale = randomUniform(0.8, 1);
+const randomDrag = randomUniform(-75, 75);
 
 const GridTile = ({
   url,
@@ -39,18 +44,17 @@ const GridTile = ({
   const parallax = useTransform(
     scrollY,
     [0, window.innerHeight],
-    [0, verticalDisplacement + getParallaxOffset()]
+    [0, -500 + randomScroll()]
   );
   const scale = useTransform(
     scrollY,
     [0, window.innerHeight],
-    [1, scaleOffset]
+    [1, randomScale()]
   );
 
   // drag parallax
 
-  const dragOffset = randomUniform(-50, 50)();
-  const dragBounds = [-dragOffset, dragOffset];
+  const dragBounds = [-randomDrag(), randomDrag()];
   const dragX = useTransform(
     worldX,
     [-canvasBounds.width, canvasBounds.width],
@@ -61,6 +65,8 @@ const GridTile = ({
     [-canvasBounds.height, canvasBounds.height],
     dragBounds
   );
+  const easedX = useSpring(dragX, SPRING_TRANSITION);
+  const easedY = useSpring(dragY, SPRING_TRANSITION);
 
   return (
     <ImageWrapper
@@ -68,7 +74,7 @@ const GridTile = ({
       $width={width}
       $height={height}
     >
-      <DragParallax style={{ x: dragX, y: dragY }}>
+      <DragParallax style={{ x: easedX, y: easedY }}>
         <ScrollParallax style={{ y: parallax, scale }}>
           <img alt={`image`} loading='lazy' src={url} draggable='false' />
         </ScrollParallax>

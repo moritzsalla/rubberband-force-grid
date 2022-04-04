@@ -1,3 +1,5 @@
+import { useGesture } from '@use-gesture/react';
+import { forceSimulation } from 'd3-force';
 import {
   motion,
   MotionConfig,
@@ -8,21 +10,15 @@ import {
 } from 'framer-motion';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
-import { useGesture } from '@use-gesture/react';
-import { forceSimulation } from 'd3-force';
-import { rectCollide } from './rectCollideForce';
-import { dampen } from './math';
+import { SPRING_TRANSITION, TRANSITION } from './animationConfig';
 import { data } from './data';
 import GridTile from './GridTile';
+import { dampen } from './math';
+import { rectCollide } from './rectCollideForce';
 
 const CANVAS_SIZE = '200%';
 const NODE_SAFE_AREA = 50;
 const SPACING_TRIES = 500;
-
-const TRANSITION = {
-  ease: [0.87, 0, 0.13, 1],
-  duration: 0.65,
-};
 
 const OuterBounds = styled.section`
   overflow: hidden;
@@ -66,11 +62,10 @@ export default function App() {
 
   // world space translation
 
-  const springConfig = { damping: 80, stiffness: 300 };
   const cursor = useMotionValue('grab');
-  const x = useSpring(0, springConfig);
-  const y = useSpring(0, springConfig);
-  const scale = useSpring(1, springConfig);
+  const x = useSpring(0, SPRING_TRANSITION);
+  const y = useSpring(0, SPRING_TRANSITION);
+  const scale = useSpring(1, SPRING_TRANSITION);
 
   // set origin to center of bounds
 
@@ -78,7 +73,7 @@ export default function App() {
     const { width, height } = boundsRef.current?.getBoundingClientRect();
     x.set(-width / 2);
     y.set(-height / 2);
-  }, []);
+  }, [x, y]);
 
   const handleDrag = ({ offset: [ox, oy], down }) => {
     scale.set(down ? 0.9 : 1);
