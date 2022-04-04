@@ -36,6 +36,7 @@ const GridTile = ({
   nodeCoords: [nodeX, nodeY],
   worldCoords: [worldX, worldY],
   canvasBounds,
+  ...rest
 }) => {
   const { scrollY } = useViewportScroll();
 
@@ -74,6 +75,7 @@ const GridTile = ({
       animate={{ x: nodeX, y: nodeY }}
       $width={width}
       $height={height}
+      {...rest}
     >
       <DragParallax style={{ x: easedX, y: easedY }}>
         <ScrollParallax style={{ y: parallax, scale }}>

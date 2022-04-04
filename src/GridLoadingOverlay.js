@@ -9,12 +9,12 @@ const Container = styled(motion.div)`
   background: black;
   top: 0;
   left: 0;
+  z-index: 100;
   height: 100%;
   width: 100%;
   color: white;
+  pointer-events: none;
 `;
-
-const Inner = styled(motion.div)``;
 
 const overlayVariants = {
   visible: { opacity: 1 },
@@ -24,9 +24,10 @@ const overlayVariants = {
 /**
  * Self containing intro animation. Unmounts when animation is complete.
  * Pass in dependencies to postpone unmounting.
+ * @param {Array<Object>} targetNodes - Array of dom image elements to animate to their final positions
  * @param {Array<Boolean>} unmountDeps - dependencies to wait for before unmounting
  */
-const GridLoadingOverlay = ({ unmountDeps = [] }) => {
+const GridLoadingOverlay = ({ targetNodes, unmountDeps = [] }) => {
   const [mounted, setMounted] = useState(true);
 
   const handleFinish = () => {
@@ -34,24 +35,40 @@ const GridLoadingOverlay = ({ unmountDeps = [] }) => {
   };
 
   return (
-    <AnimatePresence>
-      {(mounted || !unmountDeps.every(Boolean)) && (
-        <Container
-          variants={overlayVariants}
-          initial='visible'
-          animate='visible'
-          exit='hidden'
-        >
-          <Inner
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2 }}
-            onAnimationComplete={handleFinish}
+    <>
+      <AnimatePresence>
+        {(mounted || !unmountDeps.every(Boolean)) && (
+          <Container
+            variants={overlayVariants}
+            initial='visible'
+            animate='visible'
+            exit='hidden'
           >
-            Loading ...
-          </Inner>
-        </Container>
-      )}
-    </AnimatePresence>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 2 }}
+              onAnimationComplete={handleFinish}
+            >
+              Loading ...
+            </motion.div>
+          </Container>
+        )}
+      </AnimatePresence>
+
+      {targetNodes?.map(({ url, x, y, width, height }, i) => (
+        <motion.div
+          key={`${x}-${y}-${i}`}
+          style={{
+            position: 'fixed',
+            left: x,
+            top: y,
+            width,
+            height,
+            outline: '5px solid red',
+          }}
+        />
+      ))}
+    </>
   );
 };
 

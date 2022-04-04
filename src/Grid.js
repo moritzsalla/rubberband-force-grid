@@ -8,7 +8,13 @@ import {
   useTransform,
   useViewportScroll,
 } from 'framer-motion';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import styled from 'styled-components';
 import { SPRING_TRANSITION, TRANSITION } from './utils/animationConfig';
 import { data } from './data/data';
@@ -47,6 +53,7 @@ const GridContainer = styled(motion.div)`
 
 export default function App() {
   const [nodes, setNodes] = useState(null);
+  const [inViewNodes, setInViewNodes] = useState([]);
 
   const programRef = useRef(null);
   const boundsRef = useRef(null);
@@ -115,7 +122,9 @@ export default function App() {
   // --- generative grid ---
 
   const computeLayout = useCallback(() => {
-    if (!gridRef.current) return;
+    const handleCalculationEnd = () => {
+      setNodes(data);
+    };
 
     programRef.current = forceSimulation(data)
       .alphaDecay(0.1)
@@ -129,21 +138,18 @@ export default function App() {
             height + NODE_SAFE_AREA,
           ])
       )
-      .on('end', () => {
-        setNodes(data);
-      });
+      .on('end', handleCalculationEnd);
   }, []);
 
   useEffect(() => {
-    computeLayout();
+    if (gridRef.current && !nodes) computeLayout();
     return () => programRef.current.stop();
-  }, [computeLayout]);
+  }, [nodes, computeLayout]);
 
   // set origin to center of bounds
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const setWorldOrigin = debounce(({ width, height }) => {
-      console.log('setWorldOrigin', width, height);
       x.set(-width / 2);
       y.set(-height / 2);
     });
@@ -166,6 +172,21 @@ export default function App() {
     [1, 0.6]
   );
 
+  useEffect(() => {
+    const visibleImages = nodes?.filter((node) => {
+      const { x, y, width, height } = node || {};
+      const { left, top, right, bottom } =
+        boundsRef.current?.getBoundingClientRect() || {};
+
+      const isVisible =
+        x + width > left && x < right && y + height > top && y < bottom;
+
+      return isVisible;
+    });
+
+    setInViewNodes(visibleImages);
+  }, [nodes]);
+
   return (
     <MotionConfig transition={TRANSITION}>
       <OuterBounds ref={boundsRef}>
@@ -183,6 +204,7 @@ export default function App() {
                   nodeCoords={[pdsX, pdsY]}
                   worldCoords={[x, y]}
                   canvasBounds={boundsRef.current?.getBoundingClientRect()}
+                  className='grid-tile'
                 />
               );
             })}
@@ -195,14 +217,14 @@ export default function App() {
                 width: 10,
                 position: 'relative',
                 zIndex: 100,
-                background: 'red',
+                background: 'blue',
               }}
             />
           </GridContainer>
         </ScaleContainer>
-
-        <GridLoadingOverlay unmountDeps={[nodes]} />
       </OuterBounds>
+
+      <GridLoadingOverlay targetNodes={inViewNodes} unmountDeps={[nodes]} />
     </MotionConfig>
   );
 }
