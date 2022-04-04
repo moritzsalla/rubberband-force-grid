@@ -70,9 +70,14 @@ export default function App() {
   // set origin to center of bounds
 
   useEffect(() => {
-    const { width, height } = boundsRef.current?.getBoundingClientRect();
-    x.set(-width / 2);
-    y.set(-height / 2);
+    const ro = new ResizeObserver((entries) => {
+      if (!entries?.[0]) return;
+
+      const { width, height } = entries[0].contentRect;
+      x.set(-width / 2);
+      y.set(-height / 2);
+    });
+    ro.observe(boundsRef.current);
   }, [x, y]);
 
   const handleDrag = ({ offset: [ox, oy], down }) => {
