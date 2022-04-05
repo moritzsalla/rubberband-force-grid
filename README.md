@@ -1,1 +1,1 @@
-[](./thumb.jpg)
+[./thumb.jpg](thumbnail)
